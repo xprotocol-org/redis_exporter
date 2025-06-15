@@ -1,12 +1,11 @@
 package exporter
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/gomodule/redigo/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"strconv"
+	"strings"
 )
 
 // All fields of the streamInfo struct must be exported
@@ -172,6 +171,17 @@ func parseStreamItemId(id string) float64 {
 }
 
 func (e *Exporter) extractStreamMetrics(ch chan<- prometheus.Metric, c redis.Conn) {
+	if e.options.IsCluster {
+		cc, err := e.connectToRedisCluster()
+		if err != nil {
+			log.Errorf("couldn't connect to redis cluster, err: %s", err)
+			return
+		}
+		defer cc.Close()
+
+		c = cc
+	}
+
 	streams, err := parseKeyArg(e.options.CheckStreams)
 	if err != nil {
 		log.Errorf("Couldn't parse given stream keys: %s", err)
@@ -194,10 +204,13 @@ func (e *Exporter) extractStreamMetrics(ch chan<- prometheus.Metric, c redis.Con
 
 	log.Debugf("allStreams: %#v", allStreams)
 	for _, k := range allStreams {
-		if _, err := doRedisCmd(c, "SELECT", k.db); err != nil {
-			log.Debugf("Couldn't select database '%s' when getting stream info", k.db)
-			continue
+		if !e.options.IsCluster {
+			if _, err := doRedisCmd(c, "SELECT", k.db); err != nil {
+				log.Debugf("Couldn't select database '%s' when getting stream info", k.db)
+				continue
+			}
 		}
+
 		info, err := getStreamInfo(c, k.key)
 		if err != nil {
 			log.Errorf("couldn't get info for stream '%s', err: %s", k.key, err)

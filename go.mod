@@ -1,8 +1,8 @@
 module github.com/oliver006/redis_exporter
 
-go 1.23.0
+go 1.24
 
-toolchain go1.24.2
+replace github.com/mna/redisc => ./libraries/redisc
 
 require (
 	github.com/gomodule/redigo v1.9.3

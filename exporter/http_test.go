@@ -251,6 +251,8 @@ func TestSimultaneousMetricsHttpRequests(t *testing.T) {
 	wg.Add(goroutines)
 	for ; goroutines > 0; goroutines-- {
 		go func() {
+			defer wg.Done()
+
 			requests := 100
 			for ; requests > 0; requests-- {
 				v := url.Values{}
@@ -282,7 +284,6 @@ func TestSimultaneousMetricsHttpRequests(t *testing.T) {
 					}
 				}
 			}
-			wg.Done()
 		}()
 	}
 	wg.Wait()

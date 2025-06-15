@@ -22,9 +22,9 @@ docker-env-down:
 
 
 .PHONY: docker-test
-docker-test:
+docker-test: test-certs
 	$(DOCKER_COMPOSE) -f docker-compose.yml up -d
-	$(DOCKER_COMPOSE) -f docker-compose.yml run --rm tests bash -c 'make test'
+	make test
 
 
 .PHONY: test-certs
@@ -49,8 +49,8 @@ test:
 	TEST_KEYDB02_URI="redis://localhost:16402" \
 	TEST_PWD_REDIS_URI="redis://:redis-password@localhost:16380" \
 	TEST_USER_PWD_REDIS_URI="redis://exporter:exporter-password@localhost:16390" \
-	TEST_REDIS_CLUSTER_MASTER_URI="redis://localhost:17000" \
-	TEST_REDIS_CLUSTER_SLAVE_URI="redis://localhost:17005" \
+	TEST_REDIS_CLUSTER_MASTER_URI="redis://localhost:7000" \
+	TEST_REDIS_CLUSTER_SLAVE_URI="redis://localhost:7005" \
 	TEST_VALKEY_CLUSTER_PASSWORD_URI="redis://localhost:17006" \
 	TEST_TILE38_URI="redis://localhost:19851" \
 	TEST_VALKEY_SENTINEL_URI="redis://localhost:26379" \
